@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shopeers — Admin Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F5F6FA;
+    --surface:#FFFFFF;
+    --line:#EAEBF0;
+    --line-soft:#F1F2F6;
+    --blue:#3B5BF5;
+    --blue-light:#EEF1FE;
+    --blue-dark:#2740C4;
+    --green:#1FA45A;
+    --green-light:#E9F8EF;
+    --red:#E5484D;
+    --red-light:#FDECED;
+    --amber:#F2A93B;
+    --amber-light:#FDF3E2;
+    --purple:#8B5CF6;
+    --text:#15172B;
+    --text-dim:#6B6F87;
+    --text-faint:#9B9EB0;
+    --radius:14px;
+    --radius-sm:10px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); line-height:1.5; font-size:14px;}
+  a{text-decoration:none; color:inherit;}
+  button{font-family:inherit; cursor:pointer; border:none; background:none;}
+  img{max-width:100%; display:block;}
+  ul{list-style:none;}
+
+  .app{display:flex; min-height:100vh;}
+
+  /* ===== Sidebar ===== */
+  .sidebar{
+    width:240px; background:var(--surface); border-right:1px solid var(--line);
+    display:flex; flex-direction:column; padding:20px 14px; flex-shrink:0;
+    position:sticky; top:0; height:100vh; overflow-y:auto;
+  }
+  .sb-brand{display:flex; align-items:center; justify-content:space-between; padding:0 8px 22px;}
+  .sb-brand .logo{display:flex; align-items:center; gap:8px; font-weight:700; font-size:16px;}
+  .sb-brand .logo .mark{width:26px;height:26px; border-radius:7px; background:linear-gradient(135deg,var(--blue),var(--purple)); display:flex; align-items:center; justify-content:center; color:#fff; font-size:14px;}
+  .sb-collapse{width:26px;height:26px; border:1px solid var(--line); border-radius:7px; display:flex; align-items:center; justify-content:center; color:var(--text-faint); font-size:11px;}
+
+  .nav-section{margin-bottom:4px;}
+  .nav-item{
+    display:flex; align-items:center; gap:11px; padding:9px 10px; border-radius:9px; font-size:13.5px; color:var(--text-dim); font-weight:500;
+    margin-bottom:1px; position:relative; transition:background .15s, color .15s;
+  }
+  .nav-item .ic{width:17px; text-align:center; font-size:14px; flex-shrink:0;}
+  .nav-item:hover{background:var(--line-soft); color:var(--text);}
+  .nav-item.active{background:var(--blue-light); color:var(--blue-dark); font-weight:600;}
+  .nav-item.active::before{content:''; position:absolute; left:-14px; top:8px; bottom:8px; width:3px; background:var(--blue); border-radius:0 3px 3px 0;}
+  .nav-item .count{margin-left:auto; background:var(--line-soft); color:var(--text-dim); font-size:11px; font-weight:600; padding:1px 7px; border-radius:20px;}
+  .nav-item.active .count{background:var(--blue); color:#fff;}
+  .nav-item .chev{margin-left:auto; font-size:10px; transition:transform .2s;}
+  .nav-item .chev.open{transform:rotate(90deg);}
+  .nav-divider{height:1px; background:var(--line); margin:12px 4px;}
+  .nav-sub{padding-left:30px; max-height:0; overflow:hidden; transition:max-height .25s ease;}
+  .nav-sub.open{max-height:200px;}
+  .nav-sub .nav-item{font-size:13px; padding:7px 10px;}
+
+  .sb-bottom{margin-top:auto;}
+  .premium-card{
+    background:linear-gradient(155deg, var(--blue-dark), var(--blue) 60%, var(--purple) 130%);
+    border-radius:var(--radius); padding:16px; color:#fff; margin-top:16px;
+  }
+  .premium-card .pc-icon{width:30px;height:30px; border-radius:8px; background:rgba(255,255,255,.18); display:flex; align-items:center; justify-content:center; margin-bottom:10px;}
+  .premium-card h4{font-size:13px; margin-bottom:4px;}
+  .premium-card p{font-size:11.5px; opacity:.85; margin-bottom:12px; line-height:1.4;}
+  .premium-card button{background:#fff; color:var(--blue-dark); font-size:12px; font-weight:700; padding:8px; border-radius:8px; width:100%;}
+
+  /* ===== Topbar ===== */
+  .main{flex:1; min-width:0; display:flex; flex-direction:column;}
+  .topbar{
+    display:flex; align-items:center; gap:16px; padding:14px 28px; background:var(--surface);
+    border-bottom:1px solid var(--line); position:sticky; top:0; z-index:20;
+  }
+  .search-box{
+    flex:1; max-width:380px; display:flex; align-items:center; gap:8px; background:var(--bg);
+    border:1px solid var(--line); border-radius:9px; padding:8px 12px; color:var(--text-faint); font-size:13px;
+  }
+  .search-box input{border:none; background:none; outline:none; flex:1; font-size:13px; color:var(--text);}
+  .search-box kbd{font-size:11px; border:1px solid var(--line); border-radius:5px; padding:1px 6px; color:var(--text-faint);}
+  .top-actions{display:flex; align-items:center; gap:14px; margin-left:auto;}
+  .icon-btn{width:34px;height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; color:var(--text-dim); border:1px solid transparent; transition:background .15s;}
+  .icon-btn:hover{background:var(--line-soft);}
+  .topbar .avatar{width:34px;height:34px; border-radius:50%; background:linear-gradient(135deg,var(--blue),var(--purple)); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px;}
+
+  .content{padding:26px 28px; flex:1;}
+  .page-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; flex-wrap:wrap; gap:12px;}
+  .page-head h1{font-size:25px; font-weight:700;}
+  .head-actions{display:flex; align-items:center; gap:10px;}
+  .pill-btn{display:flex; align-items:center; gap:6px; background:var(--surface); border:1px solid var(--line); padding:8px 13px; border-radius:9px; font-size:13px; font-weight:500; color:var(--text-dim); transition:border-color .15s;}
+  .pill-btn:hover{border-color:var(--blue);}
+  .btn-primary{background:var(--blue); color:#fff; padding:9px 16px; border-radius:9px; font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px; transition:background .15s, transform .15s;}
+  .btn-primary:hover{background:var(--blue-dark); transform:translateY(-1px);}
+  .btn-outline{background:var(--surface); border:1px solid var(--line); padding:9px 16px; border-radius:9px; font-size:13px; font-weight:600; color:var(--text);}
+
+  /* ===== Cards / grid ===== */
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:18px;}
+  .stat-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:18px;}
+  .stat-card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:18px; transition:transform .2s, box-shadow .2s;}
+  .stat-card:hover{transform:translateY(-2px); box-shadow:0 10px 24px rgba(21,23,43,.06);}
+  .stat-top{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; color:var(--text-dim); font-size:13px; font-weight:500;}
+  .stat-top .ic{color:var(--blue); font-size:15px;}
+  .stat-num{font-size:26px; font-weight:700; display:flex; align-items:baseline; gap:8px; margin-bottom:4px;}
+  .delta{font-size:11.5px; font-weight:700; padding:2px 7px; border-radius:6px;}
+  .delta.up{color:var(--green); background:var(--green-light);}
+  .delta.down{color:var(--red); background:var(--red-light);}
+  .stat-sub{font-size:12px; color:var(--text-faint);}
+
+  .dash-grid{display:grid; grid-template-columns:2fr 1fr; gap:16px; margin-bottom:16px;}
+  .panel-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;}
+  .panel-head h3{font-size:14.5px; font-weight:700;}
+  .panel-head .ic{color:var(--text-faint); font-size:13px; cursor:pointer;}
+
+  .chart-row{display:flex; gap:28px; align-items:flex-end;}
+  .profit-num{font-size:30px; font-weight:700; margin:4px 0 6px;}
+
+  .seg-bar{display:flex; height:8px; border-radius:6px; overflow:hidden; margin-top:14px; gap:2px;}
+  .seg-bar span{height:100%;}
+  .seg-row{display:flex; justify-content:space-between; margin-top:14px;}
+  .seg-item{display:flex; align-items:center; gap:8px; font-size:12.5px;}
+  .seg-item .dot{width:7px;height:7px;border-radius:50%;}
+  .seg-item .v{font-weight:700; font-size:14px; display:block;}
+  .seg-item .l{color:var(--text-faint); font-size:11.5px;}
+
+  .bars{display:flex; align-items:flex-end; gap:14px; height:120px; margin-top:10px;}
+  .bar-col{flex:1; display:flex; flex-direction:column; align-items:center; gap:8px;}
+  .bar{width:100%; border-radius:6px 6px 3px 3px; background:var(--line-soft); transition:background .2s;}
+  .bar.peak{background:var(--blue);}
+  .bar-col .lbl{font-size:11.5px; color:var(--text-faint);}
+  .bar-col.active .lbl{color:var(--text); font-weight:700;}
+
+  .gauge-wrap{display:flex; flex-direction:column; align-items:center; padding:6px 0;}
+  .gauge-num{font-size:26px; font-weight:700; margin-top:-58px;}
+  .gauge-sub{font-size:11.5px; color:var(--text-faint); margin-top:4px; margin-bottom:14px;}
+
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  th{text-align:left; color:var(--text-faint); font-weight:600; font-size:10.5px; text-transform:uppercase; letter-spacing:.03em; padding:9px 10px; border-bottom:1px solid var(--line);}
+  td{padding:13px 10px; border-bottom:1px solid var(--line-soft); vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  .prod-cell{display:flex; align-items:center; gap:10px;}
+  .prod-thumb{width:34px;height:34px; border-radius:8px; object-fit:cover; flex-shrink:0; background:var(--line-soft);}
+  .rev-up{color:var(--green); font-weight:600;}
+  .rev-down{color:var(--red); font-weight:600;}
+  .star{color:var(--amber);}
+  .badge{font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px; display:inline-block;}
+  .badge.green{background:var(--green-light); color:var(--green);}
+  .badge.red{background:var(--red-light); color:var(--red);}
+  .badge.amber{background:var(--amber-light); color:var(--amber);}
+  .badge.grey{background:var(--line-soft); color:var(--text-dim);}
+  .badge.blue{background:var(--blue-light); color:var(--blue-dark);}
+
+  .ai-box{display:flex; flex-direction:column; align-items:center; padding:10px 0 4px;}
+  .ai-orb{width:60px;height:60px; border-radius:50%; background:radial-gradient(circle at 35% 30%, #7C9CFF, var(--blue) 70%); margin:18px 0 22px; box-shadow:0 8px 24px rgba(59,91,245,.35); animation:floatOrb 3s ease-in-out infinite;}
+  @keyframes floatOrb{0%,100%{transform:translateY(0);} 50%{transform:translateY(-6px);}}
+  .ai-input{display:flex; align-items:center; gap:8px; width:100%; border:1px solid var(--line); border-radius:10px; padding:9px 12px; background:var(--bg);}
+  .ai-input input{flex:1; border:none; background:none; outline:none; font-size:13px;}
+  .ai-send{width:26px;height:26px; border-radius:50%; background:var(--blue); color:#fff; display:flex; align-items:center; justify-content:center; font-size:11px;}
+
+  /* ===== Generic page layouts ===== */
+  .toolbar{display:flex; align-items:center; gap:10px; margin-bottom:18px; flex-wrap:wrap;}
+  .toolbar .search-box{max-width:260px;}
+  .tab-row{display:flex; gap:4px; background:var(--line-soft); padding:4px; border-radius:9px; width:fit-content; margin-bottom:18px;}
+  .tab-row button{padding:7px 14px; border-radius:7px; font-size:12.5px; font-weight:600; color:var(--text-dim);}
+  .tab-row button.active{background:var(--surface); color:var(--text); box-shadow:0 1px 3px rgba(0,0,0,.08);}
+
+  .product-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:16px;}
+  .product-card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; transition:transform .2s, box-shadow .2s;}
+  .product-card:hover{transform:translateY(-3px); box-shadow:0 12px 26px rgba(21,23,43,.08);}
+  .product-card img{width:100%; height:120px; object-fit:cover;}
+  .product-card .pc-body{padding:13px;}
+  .product-card .pc-name{font-size:13px; font-weight:600; margin-bottom:4px;}
+  .product-card .pc-meta{font-size:11.5px; color:var(--text-faint); display:flex; justify-content:space-between;}
+
+  .settings-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:16px;}
+  .field{display:flex; flex-direction:column; gap:6px; margin-bottom:14px;}
+  .field label{font-size:12px; font-weight:600; color:var(--text-dim);}
+  .field input, .field select, .field textarea{padding:9px 12px; border:1px solid var(--line); border-radius:8px; font-size:13px; color:var(--text); background:var(--surface);}
+  .toggle-row{display:flex; align-items:center; justify-content:space-between; padding:13px 0; border-bottom:1px solid var(--line-soft);}
+  .toggle-row:last-child{border-bottom:none;}
+  .toggle{width:38px; height:21px; background:var(--line); border-radius:20px; position:relative; transition:background .2s; flex-shrink:0;}
+  .toggle.on{background:var(--blue);}
+  .toggle::after{content:''; width:17px;height:17px; background:#fff; border-radius:50%; position:absolute; top:2px; left:2px; transition:left .2s; box-shadow:0 1px 3px rgba(0,0,0,.2);}
+  .toggle.on::after{left:19px;}
+
+  .faq-item{border:1px solid var(--line); border-radius:var(--radius-sm); padding:15px; margin-bottom:10px; cursor:pointer;}
+  .faq-item .q{font-weight:600; font-size:13.5px; display:flex; justify-content:space-between;}
+  .faq-item .a{font-size:12.5px; color:var(--text-dim); margin-top:8px; display:none;}
+  .faq-item.open .a{display:block;}
+
+  .discount-code{font-family:monospace; background:var(--blue-light); color:var(--blue-dark); padding:3px 8px; border-radius:6px; font-size:12px; font-weight:700;}
+
+  .empty-hint{font-size:12px; color:var(--text-faint); padding:30px; text-align:center;}
+
+  .hidden{display:none !important;}
+
+  @keyframes fadeIn{from{opacity:0;} to{opacity:1;}}
+  .content{animation:fadeIn .3s ease;}
+
+  @media(max-width:1100px){
+    .stat-grid{grid-template-columns:repeat(2,1fr);}
+    .dash-grid{grid-template-columns:1fr;}
+    .product-grid{grid-template-columns:repeat(2,1fr);}
+    .settings-grid{grid-template-columns:1fr;}
+  }
+  @media(max-width:760px){
+    .sidebar{position:fixed; left:-260px; z-index:100; transition:left .25s; box-shadow:0 0 0 9999px rgba(0,0,0,0);}
+    .sidebar.open{left:0; box-shadow:10px 0 30px rgba(0,0,0,.15);}
+    .topbar{padding:12px 16px;}
+    .search-box{display:none;}
+    .content{padding:18px 16px;}
+    .stat-grid{grid-template-columns:repeat(2,1fr); gap:10px;}
+    .product-grid{grid-template-columns:1fr 1fr;}
+    .page-head h1{font-size:20px;}
+    .mobile-menu-btn{display:flex !important;}
+  }
+  .mobile-menu-btn{display:none; width:34px;height:34px; align-items:center; justify-content:center; border:1px solid var(--line); border-radius:8px; margin-right:4px;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-brand">
+      <div class="logo"><span class="mark">S</span> Shopeers</div>
+      <div class="sb-collapse">⟨⟩</div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-item" data-page="dashboard" onclick="goTo('dashboard')"><span class="ic">◎</span> Dashboard</div>
+      <div class="nav-item" data-page="orders" onclick="goTo('orders')"><span class="ic">▣</span> Orders <span class="count">46</span></div>
+      <div class="nav-item" data-page="products" onclick="goTo('products')"><span class="ic">◫</span> Products</div>
+      <div class="nav-item" data-page="customers" onclick="goTo('customers')"><span class="ic">◔</span> Customers</div>
+      <div class="nav-item" data-page="content" onclick="goTo('content')"><span class="ic">▤</span> Content</div>
+      <div class="nav-item" data-page="onlinestore" onclick="goTo('onlinestore')"><span class="ic">⌂</span> Online Store</div>
+    </div>
+
+    <div class="nav-divider"></div>
+
+    <div class="nav-section">
+      <div class="nav-item" id="financesToggle" onclick="toggleFinances()"><span class="ic">$</span> Finances <span class="chev" id="financesChev">▸</span></div>
+      <div class="nav-sub" id="financesSub">
+        <div class="nav-item" data-page="invoices" onclick="goTo('invoices')">Invoices</div>
+        <div class="nav-item" data-page="transactions" onclick="goTo('transactions')">Transactions</div>
+        <div class="nav-item" data-page="reports" onclick="goTo('reports')">Reports</div>
+      </div>
+      <div class="nav-item" data-page="analytics" onclick="goTo('analytics')"><span class="ic">📈</span> Analytics</div>
+      <div class="nav-item" data-page="discounts" onclick="goTo('discounts')"><span class="ic">◧</span> Discounts</div>
+    </div>
+
+    <div class="sb-bottom">
+      <div class="nav-item" data-page="settings" onclick="goTo('settings')"><span class="ic">⚙</span> Settings</div>
+      <div class="nav-item" data-page="help" onclick="goTo('help')"><span class="ic">?</span> Help &amp; Support</div>
+      <div class="premium-card">
+        <div class="pc-icon">🛡️</div>
+        <h4>Upgrade to Premium!</h4>
+        <p>Upgrade your account and unlock all of the benefits.</p>
+        <button>Upgrade premium</button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="mobile-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</div>
+      <div class="search-box">🔍 <input placeholder="Search anything..."> <kbd>⌘K</kbd></div>
+      <div class="top-actions">
+        <div class="icon-btn">☀</div>
+        <div class="icon-btn">🔔</div>
+        <div class="avatar">SK</div>
+      </div>
+    </div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<script>
+/* ===================== MOCK DATA ===================== */
+const orders = [
+  {id:"#83012", customer:"Anita Roy", date:"20 Jun 2026", items:3, total:248.50, status:"Delivered"},
+  {id:"#83011", customer:"Mark Sully", date:"20 Jun 2026", items:1, total:62.00, status:"Processing"},
+  {id:"#83010", customer:"Priya Sen", date:"19 Jun 2026", items:5, total:512.30, status:"Delivered"},
+  {id:"#83009", customer:"Liam Chen", date:"19 Jun 2026", items:2, total:124.84, status:"Shipped"},
+  {id:"#83008", customer:"Sofia Cruz", date:"18 Jun 2026", items:1, total:48.00, status:"Cancelled"},
+  {id:"#83007", customer:"Rahul Mehta", date:"18 Jun 2026", items:4, total:301.10, status:"Delivered"},
+  {id:"#83006", customer:"Emma Watts", date:"17 Jun 2026", items:2, total:89.99, status:"Processing"},
+];
+
+const products = [
+  {id:"#83009", name:"Hybrid Active Noise Cancelling Headphones", sold:2310, revenue:124839, rating:5.0, stock:54, img:"https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=200&q=60"},
+  {id:"#83001", name:"Casio G-Shock Resistant Watch", sold:1230, revenue:92662, rating:4.8, stock:120, img:"https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=200&q=60"},
+  {id:"#83004", name:"SAMSUNG Galaxy S25 Ultra 5G", sold:812, revenue:74048, rating:4.7, stock:18, img:"https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=200&q=60"},
+  {id:"#83002", name:"Xbox Wireless Gaming Controller", sold:645, revenue:62820, rating:4.5, stock:76, img:"https://images.unsplash.com/photo-1592840496694-26d035b52b48?auto=format&fit=crop&w=200&q=60"},
+  {id:"#83003", name:"Timex Men's Easy Reader Watch", sold:572, revenue:48724, rating:4.5, stock:240, img:"https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=200&q=60"},
+  {id:"#83005", name:"Logitech MX Master Wireless Mouse", sold:498, revenue:39840, rating:4.6, stock:88, img:"https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=200&q=60"},
+  {id:"#83006", name:"Anker PowerCore 20K Power Bank", sold:455, revenue:27300, rating:4.4, stock:312, img:"https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?auto=format&fit=crop&w=200&q=60"},
+  {id:"#83007", name:"Sony WH-1000XM5 Headphones", sold:390, revenue:97500, rating:4.9, stock:42, img:"https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=200&q=60"},
+];
+
+const customers = [
+  {name:"Anita Roy", email:"anita.roy@email.com", segment:"Retailer", orders:14, spent:2840.50, joined:"Mar 2025"},
+  {name:"Mark Sully", email:"mark.sully@email.com", segment:"Distributor", orders:32, spent:9120.00, joined:"Jan 2025"},
+  {name:"Priya Sen", email:"priya.sen@email.com", segment:"Wholesaler", orders:8, spent:1230.40, joined:"May 2025"},
+  {name:"Liam Chen", email:"liam.chen@email.com", segment:"Retailer", orders:21, spent:4310.80, joined:"Feb 2025"},
+  {name:"Sofia Cruz", email:"sofia.cruz@email.com", segment:"Retailer", orders:5, spent:680.00, joined:"Jun 2025"},
+];
+
+const invoices = [
+  {id:"INV-2041", client:"Nimbus Retail Co.", date:"18 Jun 2026", amount:4820.00, status:"Paid"},
+  {id:"INV-2040", client:"Orbit Wholesale", date:"15 Jun 2026", amount:1230.50, status:"Pending"},
+  {id:"INV-2039", client:"BlueWave Distributors", date:"10 Jun 2026", amount:9840.00, status:"Paid"},
+  {id:"INV-2038", client:"Maple Retail Group", date:"05 Jun 2026", amount:540.20, status:"Overdue"},
+];
+
+const transactions = [
+  {id:"TXN-9921", desc:"Order #83012 payment", date:"20 Jun 2026", amount:248.50, type:"Credit"},
+  {id:"TXN-9920", desc:"Refund — Order #83008", date:"19 Jun 2026", amount:-48.00, type:"Debit"},
+  {id:"TXN-9919", desc:"Order #83010 payment", date:"19 Jun 2026", amount:512.30, type:"Credit"},
+  {id:"TXN-9918", desc:"Payout to bank", date:"17 Jun 2026", amount:-3200.00, type:"Debit"},
+];
+
+const discounts = [
+  {code:"WELCOME10", type:"Percentage", value:"10%", used:312, status:"Active", expires:"31 Dec 2026"},
+  {code:"FREESHIP", type:"Shipping", value:"Free", used:890, status:"Active", expires:"—"},
+  {code:"SUMMER25", type:"Percentage", value:"25%", used:120, status:"Expired", expires:"30 Jun 2026"},
+  {code:"VIP500", type:"Fixed", value:"$5.00", used:48, status:"Active", expires:"15 Aug 2026"},
+];
+
+const contentPages = [
+  {title:"About Us", type:"Page", status:"Published", updated:"2 days ago"},
+  {title:"Summer Sale Announcement", type:"Blog", status:"Published", updated:"5 days ago"},
+  {title:"Shipping & Returns Policy", type:"Page", status:"Published", updated:"1 week ago"},
+  {title:"New Arrivals — Tech Edition", type:"Blog", status:"Draft", updated:"3 hours ago"},
+];
+
+let state = { page:'dashboard', financesOpen:true };
+
+/* ===================== RENDER FUNCTIONS ===================== */
+function statusBadge(status){
+  const map = {
+    Delivered:"green", Paid:"green", Active:"green", Published:"green",
+    Processing:"amber", Pending:"amber", Draft:"amber",
+    Shipped:"blue", Credit:"green",
+    Cancelled:"red", Overdue:"red", Expired:"red", Debit:"red"
+  };
+  return `<span class="badge ${map[status]||'grey'}">${status}</span>`;
+}
+
+function renderDashboard(){
+  return `
+  <div class="page-head">
+    <h1>Dashboard</h1>
+    <div class="head-actions">
+      <button class="pill-btn">📅 Jan 1, 2025 – Feb 1, 2025</button>
+      <button class="pill-btn">Last 30 days ⌄</button>
+      <button class="pill-btn">＋ Add widget</button>
+      <button class="btn-primary">⭳ Export</button>
+    </div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-top">Page Views <span class="ic">◉</span></div><div class="stat-num">16,431 <span class="delta up">▲ 15.5%</span></div><div class="stat-sub">vs. 14,853 last period</div></div>
+    <div class="stat-card"><div class="stat-top">Visitors <span class="ic">⚇</span></div><div class="stat-num">6,225 <span class="delta up">▲ 8.4%</span></div><div class="stat-sub">vs. 5,732 last period</div></div>
+    <div class="stat-card"><div class="stat-top">Click <span class="ic">⊕</span></div><div class="stat-num">2,832 <span class="delta down">▼ 10.5%</span></div><div class="stat-sub">vs. 3,294 last period</div></div>
+    <div class="stat-card"><div class="stat-top">Orders <span class="ic">▣</span></div><div class="stat-num">1,224 <span class="delta up">▲ 4.4%</span></div><div class="stat-sub">vs. 1,186 last period</div></div>
+  </div>
+
+  <div class="dash-grid">
+    <div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="panel-head"><h3>Total Profit</h3><span class="ic">⋯</span></div>
+        <div class="profit-num">$446.7K</div>
+        <div class="delta up" style="display:inline-block; margin-bottom:14px;">▲ 24.4% vs. last period</div>
+        ${profitChartSVG()}
+      </div>
+      <div class="card">
+        <div class="panel-head"><h3>Customers</h3><span class="ic">⋯</span></div>
+        <div class="seg-bar">
+          <span style="background:var(--blue); width:55%;"></span>
+          <span style="background:var(--green); width:30%;"></span>
+          <span style="background:var(--amber); width:15%;"></span>
+        </div>
+        <div class="seg-row">
+          <div class="seg-item"><span class="dot" style="background:var(--blue);"></span><div><span class="v">📥 2,884</span><span class="l">Retailers</span></div></div>
+          <div class="seg-item"><span class="dot" style="background:var(--green);"></span><div><span class="v">📤 1,432</span><span class="l">Distributors</span></div></div>
+          <div class="seg-item"><span class="dot" style="background:var(--amber);"></span><div><span class="v">📦 562</span><span class="l">Wholesalers</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="panel-head"><h3>Most Day Active</h3><span class="ic">⋯</span></div>
+        <div style="text-align:center; font-weight:700; font-size:18px; margin-bottom:6px;">8,162</div>
+        <div class="bars">
+          ${["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map((d,i)=>`
+            <div class="bar-col ${d==='Tue'?'active':''}">
+              <div class="bar ${d==='Tue'?'peak':''}" style="height:${[40,55,100,60,35,50,30][i]}%;"></div>
+              <div class="lbl">${d}</div>
+            </div>`).join('')}
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="panel-head"><h3>Repeat Customer Rate</h3><span class="ic">⋯</span></div>
+        <div class="gauge-wrap">
+          ${gaugeSVG(68)}
+          <div class="gauge-num">68%</div>
+          <div class="gauge-sub">On track for 80% target</div>
+          <button class="btn-outline" style="font-size:12px; padding:7px 14px;">Show details</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dash-grid">
+    <div class="card">
+      <div class="panel-head"><h3>Best Selling Products</h3><span class="ic">⋯</span></div>
+      <table>
+        <tr><th>ID</th><th>Name</th><th>Sold</th><th>Revenue</th><th>Rating</th></tr>
+        ${products.slice(0,5).map(p=>`
+          <tr>
+            <td>${p.id}</td>
+            <td><div class="prod-cell"><img class="prod-thumb" src="${p.img}"> ${p.name.length>28?p.name.slice(0,28)+'…':p.name}</div></td>
+            <td>${p.sold.toLocaleString()} sold</td>
+            <td class="${p.revenue>60000?'rev-up':'rev-down'}">${p.revenue>60000?'↑':'↓'} $${p.revenue.toLocaleString()}</td>
+            <td><span class="star">★</span> (${p.rating})</td>
+          </tr>`).join('')}
+      </table>
+    </div>
+    <div class="card">
+      <div class="panel-head"><h3>AI Assistant</h3><span class="ic">⤢</span></div>
+      <div class="ai-box">
+        <div class="ai-orb"></div>
+        <div class="ai-input">📎 <input placeholder="Ask me anything..."> 🎤 <div class="ai-send">↑</div></div>
+      </div>
+    </div>
+  </div>
+  `;
+}
+
+function profitChartSVG(){
+  const pts = [20,35,30,50,42,60,55,70,58,48,40,52,46];
+  const w=560, h=120, max=Math.max(...pts), min=Math.min(...pts);
+  const stepX = w/(pts.length-1);
+  const toY = v => h - ((v-min)/(max-min))*h*0.85 - 8;
+  const path = pts.map((v,i)=>`${i===0?'M':'L'} ${i*stepX} ${toY(v)}`).join(' ');
+  const area = path + ` L ${w} ${h} L 0 ${h} Z`;
+  return `
+  <svg viewBox="0 0 ${w} ${h+18}" width="100%" height="160" preserveAspectRatio="none">
+    <defs><linearGradient id="profitGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3B5BF5" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#3B5BF5" stop-opacity="0"/>
+    </linearGradient></defs>
+    <path d="${area}" fill="url(#profitGrad)"/>
+    <path d="${path}" fill="none" stroke="#3B5BF5" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="${5*stepX}" cy="${toY(pts[5])}" r="4" fill="#3B5BF5"/>
+    <line x1="${5*stepX}" y1="0" x2="${5*stepX}" y2="${h}" stroke="#3B5BF5" stroke-width="1" stroke-dasharray="3,3" opacity="0.4"/>
+  </svg>
+  <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-faint); margin-top:4px;">
+    <span>1 Jan</span><span>8 Jan</span><span>15 Jan</span><span>22 Jan</span><span>29 Jan</span>
+  </div>`;
+}
+
+function gaugeSVG(pct){
+  const r=70, cx=90, cy=90, segs=28, startAngle=-180, endAngle=0;
+  let arcs='';
+  for(let i=0;i<segs;i++){
+    const a = startAngle + (i/(segs-1))*(endAngle-startAngle);
+    const rad = a*Math.PI/180;
+    const x1 = cx + (r-9)*Math.cos(rad), y1 = cy + (r-9)*Math.sin(rad);
+    const x2 = cx + r*Math.cos(rad), y2 = cy + r*Math.sin(rad);
+    const filled = i/segs <= pct/100;
+    arcs += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${filled?'#1FA45A':'#EAEBF0'}" stroke-width="5" stroke-linecap="round"/>`;
+  }
+  return `<svg viewBox="0 0 180 100" width="180" height="100">${arcs}</svg>`;
+}
+
+function renderOrders(){
+  return `
+  <div class="page-head"><h1>Orders</h1>
+    <div class="head-actions"><button class="pill-btn">⭳ Export</button><button class="btn-primary">＋ Create order</button></div>
+  </div>
+  <div class="tab-row">
+    <button class="active">All (46)</button><button>Processing (8)</button><button>Shipped (12)</button><button>Delivered (24)</button><button>Cancelled (2)</button>
+  </div>
+  <div class="toolbar">
+    <div class="search-box" style="flex:0 1 260px;">🔍 <input placeholder="Search orders..."></div>
+    <button class="pill-btn">Status ⌄</button>
+    <button class="pill-btn">Date ⌄</button>
+  </div>
+  <div class="card">
+    <table>
+      <tr><th>Order</th><th>Customer</th><th>Date</th><th>Items</th><th>Total</th><th>Status</th><th></th></tr>
+      ${orders.map(o=>`
+        <tr>
+          <td style="font-weight:600;">${o.id}</td><td>${o.customer}</td><td>${o.date}</td><td>${o.items}</td>
+          <td>$${o.total.toFixed(2)}</td><td>${statusBadge(o.status)}</td>
+          <td><button class="btn-outline" style="padding:6px 12px; font-size:12px;">View</button></td>
+        </tr>`).join('')}
+    </table>
+  </div>`;
+}
+
+function renderProducts(){
+  return `
+  <div class="page-head"><h1>Products</h1>
+    <div class="head-actions"><button class="pill-btn">⭳ Export</button><button class="btn-primary">＋ Add product</button></div>
+  </div>
+  <div class="toolbar">
+    <div class="search-box" style="flex:0 1 260px;">🔍 <input placeholder="Search products..."></div>
+    <button class="pill-btn">Category ⌄</button>
+    <button class="pill-btn">Stock ⌄</button>
+  </div>
+  <div class="product-grid">
+    ${products.map(p=>`
+      <div class="product-card">
+        <img src="${p.img}" alt="">
+        <div class="pc-body">
+          <div class="pc-name">${p.name}</div>
+          <div class="pc-meta"><span>${p.id}</span><span>${p.stock} in stock</span></div>
+          <div class="pc-meta" style="margin-top:6px;"><span class="star">★</span> ${p.rating}<span style="font-weight:700; color:var(--text);">$${(p.revenue/p.sold).toFixed(2)}</span></div>
+        </div>
+      </div>`).join('')}
+  </div>`;
+}
+
+function renderCustomers(){
+  return `
+  <div class="page-head"><h1>Customers</h1>
+    <div class="head-actions"><button class="pill-btn">⭳ Export</button><button class="btn-primary">＋ Add customer</button></div>
+  </div>
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-top">Total customers</div><div class="stat-num">4,878</div></div>
+    <div class="stat-card"><div class="stat-top">Retailers</div><div class="stat-num">2,884</div></div>
+    <div class="stat-card"><div class="stat-top">Distributors</div><div class="stat-num">1,432</div></div>
+    <div class="stat-card"><div class="stat-top">Wholesalers</div><div class="stat-num">562</div></div>
+  </div>
+  <div class="card">
+    <table>
+      <tr><th>Name</th><th>Email</th><th>Segment</th><th>Orders</th><th>Total spent</th><th>Joined</th></tr>
+      ${customers.map(c=>`
+        <tr><td style="font-weight:600;">${c.name}</td><td>${c.email}</td><td>${statusBadge(c.segment==='Retailer'?'Published':c.segment==='Distributor'?'Active':'Pending')} ${c.segment}</td>
+        <td>${c.orders}</td><td>$${c.spent.toLocaleString(undefined,{minimumFractionDigits:2})}</td><td>${c.joined}</td></tr>`).join('')}
+    </table>
+  </div>`;
+}
+
+function renderContent(){
+  return `
+  <div class="page-head"><h1>Content</h1>
+    <div class="head-actions"><button class="btn-primary">＋ New content</button></div>
+  </div>
+  <div class="tab-row"><button class="active">All</button><button>Pages</button><button>Blog posts</button></div>
+  <div class="card">
+    <table>
+      <tr><th>Title</th><th>Type</th><th>Status</th><th>Last updated</th><th></th></tr>
+      ${contentPages.map(c=>`
+        <tr><td style="font-weight:600;">${c.title}</td><td>${c.type}</td><td>${statusBadge(c.status)}</td><td>${c.updated}</td>
+        <td><button class="btn-outline" style="padding:6px 12px; font-size:12px;">Edit</button></td></tr>`).join('')}
+    </table>
+  </div>`;
+}
+
+function renderOnlineStore(){
+  return `
+  <div class="page-head"><h1>Online Store</h1>
+    <div class="head-actions"><button class="btn-primary">View store ↗</button></div>
+  </div>
+  <div class="settings-grid">
+    <div class="card">
+      <div class="panel-head"><h3>Store theme</h3></div>
+      <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=600&q=60" style="border-radius:10px; margin-bottom:14px; height:140px; width:100%; object-fit:cover;">
+      <button class="btn-outline btn-block" style="width:100%;">Customize theme</button>
+    </div>
+    <div class="card">
+      <div class="panel-head"><h3>Domain</h3></div>
+      <div class="field"><label>Primary domain</label><input value="shopeers.com"></div>
+      <div class="field"><label>Store status</label><div class="badge green" style="width:fit-content;">Live</div></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px;">
+    <div class="panel-head"><h3>Checkout settings</h3></div>
+    <div class="toggle-row"><span>Guest checkout</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+    <div class="toggle-row"><span>Abandoned cart recovery emails</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+    <div class="toggle-row"><span>Tax calculated at checkout</span><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+  </div>`;
+}
+
+function renderInvoices(){
+  return `
+  <div class="page-head"><h1>Invoices</h1><div class="head-actions"><button class="btn-primary">＋ New invoice</button></div></div>
+  <div class="card">
+    <table>
+      <tr><th>Invoice</th><th>Client</th><th>Date</th><th>Amount</th><th>Status</th><th></th></tr>
+      ${invoices.map(i=>`
+        <tr><td style="font-weight:600;">${i.id}</td><td>${i.client}</td><td>${i.date}</td><td>$${i.amount.toLocaleString(undefined,{minimumFractionDigits:2})}</td>
+        <td>${statusBadge(i.status)}</td><td><button class="btn-outline" style="padding:6px 12px; font-size:12px;">View</button></td></tr>`).join('')}
+    </table>
+  </div>`;
+}
+
+function renderTransactions(){
+  return `
+  <div class="page-head"><h1>Transactions</h1><div class="head-actions"><button class="pill-btn">⭳ Export</button></div></div>
+  <div class="card">
+    <table>
+      <tr><th>Transaction</th><th>Description</th><th>Date</th><th>Amount</th><th>Type</th></tr>
+      ${transactions.map(t=>`
+        <tr><td style="font-weight:600;">${t.id}</td><td>${t.desc}</td><td>${t.date}</td>
+        <td class="${t.amount<0?'rev-down':'rev-up'}">${t.amount<0?'-':'+'}$${Math.abs(t.amount).toFixed(2)}</td><td>${statusBadge(t.type)}</td></tr>`).join('')}
+    </table>
+  </div>`;
+}
+
+function renderReports(){
+  return `
+  <div class="page-head"><h1>Reports</h1><div class="head-actions"><button class="pill-btn">⭳ Export</button></div></div>
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-top">Revenue (month)</div><div class="stat-num">$446.7K <span class="delta up">▲ 24.4%</span></div></div>
+    <div class="stat-card"><div class="stat-top">Net profit</div><div class="stat-num">$128.2K <span class="delta up">▲ 12.1%</span></div></div>
+    <div class="stat-card"><div class="stat-top">Refunds</div><div class="stat-num">$4.8K <span class="delta down">▼ 3.2%</span></div></div>
+    <div class="stat-card"><div class="stat-top">Tax collected</div><div class="stat-num">$31.4K</div></div>
+  </div>
+  <div class="card"><div class="panel-head"><h3>Revenue trend</h3></div>${profitChartSVG()}</div>`;
+}
+
+function renderAnalytics(){
+  return `
+  <div class="page-head"><h1>Analytics</h1><div class="head-actions"><button class="pill-btn">Last 30 days ⌄</button></div></div>
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-top">Sessions</div><div class="stat-num">28,402</div></div>
+    <div class="stat-card"><div class="stat-top">Bounce rate</div><div class="stat-num">38.2%</div></div>
+    <div class="stat-card"><div class="stat-top">Avg. session</div><div class="stat-num">3m 42s</div></div>
+    <div class="stat-card"><div class="stat-top">Conversion rate</div><div class="stat-num">4.3%</div></div>
+  </div>
+  <div class="dash-grid">
+    <div class="card"><div class="panel-head"><h3>Traffic over time</h3></div>${profitChartSVG()}</div>
+    <div class="card">
+      <div class="panel-head"><h3>Top channels</h3></div>
+      ${[["Organic search",42],["Direct",27],["Social",18],["Referral",13]].map(([n,p])=>`
+        <div style="margin-bottom:12px;">
+          <div style="display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:5px;"><span>${n}</span><span style="font-weight:700;">${p}%</span></div>
+          <div style="background:var(--line-soft); height:7px; border-radius:5px;"><div style="background:var(--blue); width:${p}%; height:100%; border-radius:5px;"></div></div>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function renderDiscounts(){
+  return `
+  <div class="page-head"><h1>Discounts</h1><div class="head-actions"><button class="btn-primary">＋ Create discount</button></div></div>
+  <div class="card">
+    <table>
+      <tr><th>Code</th><th>Type</th><th>Value</th><th>Used</th><th>Status</th><th>Expires</th></tr>
+      ${discounts.map(d=>`
+        <tr><td><span class="discount-code">${d.code}</span></td><td>${d.type}</td><td>${d.value}</td><td>${d.used} times</td>
+        <td>${statusBadge(d.status)}</td><td>${d.expires}</td></tr>`).join('')}
+    </table>
+  </div>`;
+}
+
+function renderSettings(){
+  return `
+  <div class="page-head"><h1>Settings</h1><div class="head-actions"><button class="btn-primary">Save changes</button></div></div>
+  <div class="settings-grid">
+    <div class="card">
+      <div class="panel-head"><h3>Profile</h3></div>
+      <div class="field"><label>Store name</label><input value="Shopeers"></div>
+      <div class="field"><label>Support email</label><input value="support@shopeers.com"></div>
+      <div class="field"><label>Time zone</label><select><option>(GMT+5:30) India Standard Time</option></select></div>
+    </div>
+    <div class="card">
+      <div class="panel-head"><h3>Notifications</h3></div>
+      <div class="toggle-row"><span>Email me about new orders</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+      <div class="toggle-row"><span>Weekly performance summary</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+      <div class="toggle-row"><span>Low stock alerts</span><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+    </div>
+  </div>`;
+}
+
+function renderHelp(){
+  const faqs = [
+    {q:"How do I add a new product?", a:"Go to Products → Add product, then fill in the name, price, images, and stock details."},
+    {q:"How are payouts processed?", a:"Payouts are processed weekly to your linked bank account, visible under Finances → Transactions."},
+    {q:"Can I customize my storefront theme?", a:"Yes — go to Online Store → Store theme → Customize theme to edit colors, layout, and branding."},
+  ];
+  return `
+  <div class="page-head"><h1>Help &amp; Support</h1></div>
+  <div class="card" style="margin-bottom:16px;">
+    <div class="panel-head"><h3>Frequently asked questions</h3></div>
+    ${faqs.map((f,i)=>`
+      <div class="faq-item" onclick="this.classList.toggle('open')">
+        <div class="q">${f.q} <span>⌄</span></div>
+        <div class="a">${f.a}</div>
+      </div>`).join('')}
+  </div>
+  <div class="card">
+    <div class="panel-head"><h3>Contact support</h3></div>
+    <div class="field"><label>Subject</label><input placeholder="What do you need help with?"></div>
+    <div class="field"><label>Message</label><textarea style="min-height:80px;" placeholder="Describe your issue..."></textarea></div>
+    <button class="btn-primary">Send message</button>
+  </div>`;
+}
+
+/* ===================== ROUTER ===================== */
+function toggleFinances(){
+  state.financesOpen = !state.financesOpen;
+  document.getElementById('financesSub').classList.toggle('open', state.financesOpen);
+  document.getElementById('financesChev').classList.toggle('open', state.financesOpen);
+}
+
+function goTo(page){
+  state.page = page;
+  render();
+  document.getElementById('sidebar').classList.remove('open');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function render(){
+  const c = document.getElementById('content');
+  const renderers = {
+    dashboard: renderDashboard, orders: renderOrders, products: renderProducts,
+    customers: renderCustomers, content: renderContent, onlinestore: renderOnlineStore,
+    invoices: renderInvoices, transactions: renderTransactions, reports: renderReports,
+    analytics: renderAnalytics, discounts: renderDiscounts, settings: renderSettings, help: renderHelp
+  };
+  c.innerHTML = (renderers[state.page] || renderDashboard)();
+  c.style.animation = 'none';
+  requestAnimationFrame(()=>{ c.style.animation = ''; });
+
+  document.querySelectorAll('.nav-item[data-page]').forEach(el=>{
+    el.classList.toggle('active', el.dataset.page === state.page);
+  });
+}
+
+document.getElementById('financesSub').classList.add('open');
+render();
+</script>
+</body>
+</html>
